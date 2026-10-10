@@ -14,6 +14,20 @@ declare const __EDGEEVER_DEPLOYMENT_METHOD__: string;
 declare const __EDGEEVER_DEVELOPMENT_PROFILE__: "" | "local" | "demo";
 declare const __EDGEEVER_DESKTOP_BUILD__: boolean;
 
+interface DesktopGlobalShortcutBinding {
+  key: string;
+  ctrl: boolean;
+  meta: boolean;
+  alt: boolean;
+  shift: boolean;
+}
+
+interface DesktopGlobalShortcutState {
+  binding: DesktopGlobalShortcutBinding | null;
+  registered: boolean;
+  error?: "invalid" | "unavailable" | "saveFailed";
+}
+
 interface EdgeEverDesktopBridge {
   isAvailable: boolean;
   canClearLocalData: boolean;
@@ -61,6 +75,9 @@ interface EdgeEverDesktopBridge {
     chrome: string;
     dataDir: string;
   }>;
+  globalShortcut(): Promise<DesktopGlobalShortcutState>;
+  setGlobalShortcut(binding: DesktopGlobalShortcutBinding | null): Promise<DesktopGlobalShortcutState>;
+  captureGlobalShortcut(capturing: boolean): Promise<boolean>;
   setAccountScope(accountId: string | null): Promise<{ ready: true; scope: string }>;
   updateStatus(): Promise<DesktopUpdateStatus>;
   checkUpdate(): Promise<DesktopUpdateStatus>;
@@ -95,7 +112,7 @@ interface EdgeEverDesktopBridge {
   listAcpAdapters?(): Promise<Array<{
     id: "codex" | "claudeCode" | "antigravity" | "openClaw" | "hermesAgent" | "grokBuild" | "deepseekHarness" | "piAgent" | "workbuddyCn" | "workbuddyIntl";
     label: string;
-    state: "not_installed" | "installing" | "needs_login" | "available" | "failed";
+    state: "not_installed" | "not_probed" | "installing" | "needs_login" | "available" | "failed";
     detail?: string;
     promptCapabilities?: { image?: boolean; embeddedContext?: boolean };
     version?: string;
@@ -113,8 +130,8 @@ interface EdgeEverDesktopBridge {
     managed?: boolean;
     authMethods?: Array<{ id: string; name: string }>;
   }>;
-  installAcpAdapter?(id: "codex" | "antigravity" | "piAgent"): Promise<{ updated: boolean; version?: string; adapter?: {
-    id: "codex" | "antigravity" | "piAgent";
+  installAcpAdapter?(id: "codex" | "claudeCode" | "antigravity" | "piAgent"): Promise<{ updated: boolean; version?: string; adapter?: {
+    id: "codex" | "claudeCode" | "antigravity" | "piAgent";
     label: string;
     state: "not_installed" | "needs_login" | "available" | "failed";
     detail?: string;
